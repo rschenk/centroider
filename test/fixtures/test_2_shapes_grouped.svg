@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 300 300" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g id="shapes">
+        <path id="triangle" d="M31.568,97.403C25.899,79.142 129.027,20.752 169.59,29.003C210.153,37.253 219.656,79.633 189.035,110.643C158.414,141.654 37.862,117.676 31.568,97.403Z" style="fill:none;stroke:black;stroke-width:1px;"/>
+        <path id="rectangle" d="M79.817,175.333C98.383,166.201 230.028,145.718 244.82,164.055C259.612,182.391 278.294,254.546 248.854,268.783C219.413,283.021 37.187,284.853 27.192,254.884C17.197,224.914 48.597,190.688 79.817,175.333Z" style="fill:none;stroke:black;stroke-width:1px;"/>
+    </g>
+</svg>
