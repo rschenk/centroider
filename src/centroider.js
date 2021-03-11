@@ -3,38 +3,45 @@ const Calc = require('./calc.js')
 
 const fs = require('fs')
 
-const file = './test_4.svg'
+const file = './test/fixtures/test_4.svg'
 
 Paper.setup([100,100])
 
 let svgFile = fs.readFileSync(file)
 
-let imported = Paper.project.importSVG(svgFile.toString())
+let imported = Paper.project.importSVG(svgFile.toString(), {insert: false})
 Paper.project.view.viewSize = imported.children[0].size
 imported.bounds = imported.view.bounds
 
-let shapesContainer = imported.children['shapes']
+let shapes = imported
+  .children['shapes']
+  .children
+  .filter(s => s.className == 'Path')
+  .sort((a, b) => b.bounds.center.y - a.bounds.center.y)
 
-let centroidGroup = new Paper.Group({name: 'centroids'})
-let areaGroup = new Paper.Group({name: 'areas'})
-imported.addChild(centroidGroup)
-imported.addChild(areaGroup)
-
-shapesContainer.children.forEach((shape, i) => {
-  let centroidPoint = Calc.centroid(shape)
+let shapeSpec = shapes.map((shape, i) => {
+  let name = `shape-${i+1}`
+  let group = new Paper.Group({name: `${name}-container`})
+  let centroid = Calc.centroid(shape)
   let area = Calc.area(shape)
 
-  let centroid = new Paper.Shape.Circle({
-    center: centroidPoint,
+  let clone = shape.clone()
+  clone.name = name
+  group.addChild(clone)
+
+  let centroidMarker = new Paper.Shape.Circle({
+    name: `${name}-centroid`,
+    center: centroid,
     radius: 2,
     strokeColor: '#f00',
     fillColor: null
   })
-  centroidGroup.addChild(centroid)
+  group.addChild(centroidMarker)
 
   let areaText = new Paper.PointText({
+    name: `${name}-area`,
     fontSize: 10,
-    point: centroidPoint.add([0, -10]),
+    point: centroid.add([0, -10]),
     content: Math.round(area),
     fillColor: '#000',
     strokeColor: null,
@@ -42,7 +49,9 @@ shapesContainer.children.forEach((shape, i) => {
     justification: 'center'
   })
 
-  areaGroup.addChild(areaText)
+  group.addChild(areaText)
+
+  return {group, centroid, area}
 })
 
 console.log(Paper.project.exportSVG({asString: true, matchShapes: true}))
