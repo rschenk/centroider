@@ -28,7 +28,11 @@ module.exports = {
   
   string: {
     ...outlined,
-    strokeColor: '#000'
-  }
+    strokeColor: '#999'
+  },
 
+  metadata: {
+    ...outlined,
+    strokeColor: '#ccc'
+  },
 }

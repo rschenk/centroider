@@ -5,24 +5,32 @@ const Styles = require('./styles.js')
 
 const fs = require('fs')
 
-const fileIn = './test/fixtures/input.svg'
-const fileOut = './test/fixtures/input--centroided.svg'
+const fileIn = './test/fixtures/input_with_hang_holes.svg'
+const fileOut = './test/fixtures/input_with_hang_holes--centroided.svg'
+
+// const fileIn = './test/fixtures/input.svg'
+// const fileOut = './test/fixtures/input--centroided.svg'
 
 const holeDiameter = Units.inch(0.056)
 const holeRadius = holeDiameter / 2
 const holePadding = holeDiameter
 
+const padding = Units.inch(0.5)
+
 let {imported} = loadAndSetup(fileIn)
 
 let shapes = extractShapes(imported)
+let hangHolePoints = extractHangHolePoints(imported)
+let hangHolesByShape = mapHangHolesToShapes(shapes, hangHolePoints)
 
-let shapeSpec = analyse(shapes)
+let shapeSpec = analyse(shapes, hangHolesByShape)
+
 
 // Render
 
 shapeSpec.forEach((spec, i) => {
   let {name, shape, centroid, area, hangHoleDownPoint, hangHoleUpPoint} = spec 
-  
+
   let group = new Paper.Group({name: `${name}-container`})
   group.addChild(shape)
 
@@ -56,14 +64,14 @@ shapeSpec.forEach((spec, i) => {
     style: Styles.hole
   })
   
-  // let hangHoleDownPaddingPath = new Paper.Path.Circle({
-    //   parent: group,
-    //   name: `${name}-hang-hole-down-pad`,
-    //   center: hangHoleDownPoint,
-    //   radius: holeRadius + holePadding,
-    //   style: Styles.line
-    // })
-    
+  let hangHoleDownPaddingPath = (i === 0) ? null : new Paper.Path.Circle({
+    parent: group,
+    name: `${name}-hang-hole-down-pad`,
+    center: hangHoleDownPoint,
+    radius: holeRadius + holePadding,
+    style: Styles.metadata
+  })
+
   let hangHoleUpPath = new Paper.Path.Circle({
     parent: group,
     name: `${name}-hang-hole-up`,
@@ -72,14 +80,14 @@ shapeSpec.forEach((spec, i) => {
     style: Styles.hole
   })
 
-  // let hangHoleUpPaddingPath = new Paper.Path.Circle({
-  //   parent: group,
-  //   name: `${name}-hang-hole-up-pad`,
-  //   center: hangHoleUpPoint,
-  //   radius: holeRadius + holePadding,
-  //   style: Styles.line
-  // })
-  
+  let hangHoleUpPaddingPath = new Paper.Path.Circle({
+    parent: group,
+    name: `${name}-hang-hole-up-pad`,
+    center: hangHoleUpPoint,
+    radius: holeRadius + holePadding,
+    style: Styles.metadata
+  })
+
   spec.render = {
     group,
     centroidMarker,
@@ -134,10 +142,21 @@ shapeSpec.forEach((spec, i) => {
 // Reorganize!
 shapeSpec.forEach(({render}) => {
   piecesGroup.addChild(render.group)
-  stringGroup.addChild(render.string)
-  metadataGroup.addChild(render.areaText)
-  metadataGroup.addChild(render.centroidMarker)
+  // stringGroup.addChild(render.string)
+  // metadataGroup.addChild(render.areaText)
+  // metadataGroup.addChild(render.centroidMarker)
 })
+
+// Resize canvas to fit all the pieces
+Paper.project.view.viewSize = new Paper.Size(
+  piecesGroup.bounds.width + padding * 2,
+  piecesGroup.bounds.height + padding * 2
+)
+
+let delta = new Paper.Point(padding, padding).subtract(piecesGroup.bounds.topLeft)
+piecesGroup.position.add(delta)
+// stringGroup.position.add(delta)
+// metadataGroup.position.add(delta)
 
 fs.writeFile(
   fileOut, 
@@ -145,15 +164,38 @@ fs.writeFile(
   () => console.log(`Wrote ${fileOut}`)
 )
 
-function analyse(shapes) {
-  let shapeSpec = shapes.map((shape, i) => calcShape(shape, `shape-${i+1}`))
+function mapHangHolesToShapes(shapes, hangHolePoints) {
+  // Map associating a shape to any hang holes that might be inside
+  let hangHolesByShape = shapes.reduce(
+    (map, shape) => { map.set(shape, []); return map }, new Map()
+  )
   
-  shapeSpec
-    .forEach(addHangHoleDown)
+  // Loop through all hang holes and add to the first shape that contains them
+  hangHolePoints.forEach(hangHolePoint => {
+    let shape = shapes.find( shape => shape.contains(hangHolePoint) )
+    shape && hangHolesByShape.get(shape).push(hangHolePoint)
+  })
   
-  addHangHoleUp(shapeSpec)
+  // Reduce the array of all hang holes found in the shape, to the rightmost one
+  hangHolesByShape.forEach((holePoints, shape) => {
+    let rightmostPoint = holePoints.sort((a,b) => b.x - a.x)[0]
+    hangHolesByShape.set(shape, rightmostPoint)
+  })
   
-  return shapeSpec
+  return hangHolesByShape
+}
+
+function analyse(shapes, hangHolesByShape) {
+  let shapeSpecs = shapes.map((shape, i) => {
+    return calcShape(shape, `shape-${i+1}`, hangHolesByShape.get(shape))
+  })
+  
+  shapeSpecs
+    .forEach(locateHangHoleDown)
+  
+  locateHangHoleUp(shapeSpecs)
+  
+  return shapeSpecs
 }
 
 function loadAndSetup(file) {
@@ -176,27 +218,45 @@ function extractShapes(imported) {
   let shapes = imported
     .children['shapes']
     .children
-    .filter(s => s.className == 'Path')
+    .filter(s => s.className == 'Path' || s.className == 'Shape')
     .sort((a, b) => b.bounds.center.y - a.bounds.center.y)
+    .map(s => (s.className == 'Shape') ? s.toPath() : s ) // convert shapes to paths
 
   return shapes
 }
 
+function extractHangHolePoints(imported) {
+  let hangHoleGroup = imported
+    .children['hangHoles'] || { children: [] }
 
-function calcShape(shape, name) {
+  let hangHoles = hangHoleGroup
+    .children
+    .filter(s => s.className == 'Path' || s.className == 'Shape')
+    .map(h => h.bounds.center)
+
+  return hangHoles
+}
+
+
+
+function calcShape(shape, name, hangHole) {
   let initialPosition = shape.position
 
   // Move shape to 0,0
+  let delta = shape.bounds.topLeft.multiply(-1)
   shape.bounds.topLeft = [0, 0]
   let centroid = Calc.centroid(shape)
   let area = Calc.area(shape)
   let rightmostPoint = findRightmostPoint(shape)
+  
+  // Adjust hang hole to new position, if present
+  let hangHoleDownPoint = hangHole && hangHole.add(delta)
 
   let clone = shape.clone()
   clone.name = name
   clone.style = Styles.shape
 
-  return {shape: clone, centroid, area, initialPosition, name, rightmostPoint}
+  return {shape: clone, centroid, area, initialPosition, name, rightmostPoint, hangHoleDownPoint}
 }
 
 function findRightmostPoint(shape) {
@@ -223,12 +283,15 @@ function findRightmostPoint(shape) {
   return average
 }
 
-function addHangHoleDown(shapeSpec, i) {
+function locateHangHoleDown(shapeSpec, i) {
+  if(shapeSpec.hangHoleDownPoint) {
+    return
+  }
+  
   if(i === 0) {
     shapeSpec.hangHoleDownPoint = shapeSpec.centroid
     return
   }
-
 
   let {shape, rightmostPoint, group, name} = shapeSpec
 
@@ -251,7 +314,7 @@ function addHangHoleDown(shapeSpec, i) {
   shapeSpec.hangHoleDownPoint = hangHoleDownPoint
 }
 
-function addHangHoleUp(shapeSpec) {
+function locateHangHoleUp(shapeSpec) {
 
   let reducer = (accumulatedArea, spec) => {
     let {area, centroid, hangHoleDownPoint, shape, group, name} = spec
@@ -264,12 +327,12 @@ function addHangHoleUp(shapeSpec) {
     let m0 = area
     let m1 = accumulatedArea
     let lBalance = (m1 * length) / (m0 + m1)
-    let balancePointX = centroid.add([lBalance, 0]).x
+    let balancePoint = centroid.add([lBalance, 0])
 
     let plumbLine = new Paper.Path({
       segments: [
-        shape.bounds.topLeft.add([balancePointX, -1]),
-        shape.bounds.bottomLeft.add([balancePointX, 1])
+        shape.bounds.topLeft.add([balancePoint.x, -1]),
+        shape.bounds.bottomLeft.add([balancePoint.x, 1])
       ],
       style: Styles.line,
       insert: false,
