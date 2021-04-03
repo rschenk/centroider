@@ -39,7 +39,7 @@ When creating the hang holes for mobiles, it is assumed that the SVG is at 72dpi
 - [x] support circles and rectangles in addition to path elements
 - [x] resize the final outputted SVG to fit the laid out mobile
 - [x] can provide your own "down" hang hole
-- [ ] make a CLI
+- [x] make a CLI
 - [ ] separate the mobile balancer code from the centroid/area annotation code and be able to run each separately
 
 ## Contributing
@@ -47,3 +47,4 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
+

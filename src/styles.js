@@ -5,34 +5,83 @@ const Glowforge = {
   lightBlue: '#56B4E9',
 }
 
-let outlined = {
+const Gray = {
+  light: '#ccc',
+  medium: '#999',
+  dark: '#555'
+}
+
+const outlined = {
   strokeWidth: 1,
   fillColor: null
 }
 
-module.exports = {
+const iterate = {
   shape: {
     ...outlined,
     strokeColor: Glowforge.black
   },
-
-  hole: {
+  
+  hangHole: {
     ...outlined,
-    strokeColor: Glowforge.darkBlue,
+    strokeColor: Glowforge.darkBlue
   },
-
-  line: {
+  
+  hangHolePadding: {
     ...outlined,
-    strokeColor: Glowforge.lightBlue
+    strokeColor: Gray.light
   },
   
   string: {
     ...outlined,
-    strokeColor: '#999'
+    strokeColor: Gray.dark
   },
-
-  metadata: {
+  
+  centroid: {
     ...outlined,
-    strokeColor: '#ccc'
+    strokeColor: '#f00'
+  },
+  
+  text: {
+    fillColor: '#000',
+    strokeColor: null,
+    fontFamily: 'Avenir Next',
+    justification: 'center'
+  }
+}
+
+const display = {
+  shape: {
+    ...outlined,
+    strokeColor: Glowforge.black
+  },
+  
+  hangHole: {
+    ...outlined,
+    strokeColor: Glowforge.black
+  },
+  
+  hangHolePadding: {
+    ...outlined,
+    strokeColor: Gray.light
+  },
+  
+  string: {
+    ...outlined,
+    strokeColor: Gray.dark
+  }
+}
+
+const laser = {
+  shape: {
+    ...outlined,
+    strokeColor: Glowforge.darkBlue
+  },
+  
+  hangHole: {
+    ...outlined,
+    strokeColor: Glowforge.black
   },
 }
+
+module.exports = { iterate, display, laser }

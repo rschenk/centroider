@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const File = require('./file.js')
+const { outputFile } = require('./file.js')
 const argv = require('yargs/yargs')(process.argv.slice(2))
     .command('balance [options] <file>', 'Balance a mobile', {
       iterate: {
@@ -32,9 +32,22 @@ if (argv._[0] === 'annotate') {
 }
 
 if (argv._[0] === 'balance') {
-  console.log("balancing!")
+  console.log(`Balancing...`)
+  const balancer = require('./balancer.js')
+  
+  let renderer = balancer.display
+  let fileSuffix = 'display'
+  
+  if (argv.iterate) {
+    renderer = balancer.iterate
+    fileSuffix = 'iterate'
+  } else if (argv.laser) {
+    renderer = balancer.laser
+    fileSuffix = 'laser'
+  }
+  
+  let fileIn = argv.file
+  let fileOut = outputFile(argv.file, `balanced-${fileSuffix}`)
+  
+  renderer(fileIn, fileOut, () => console.log(`Balanced ${fileOut}`))
 }
-
-File.outputFile(argv.file)
-
-console.dir(argv)
