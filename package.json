@@ -6,7 +6,8 @@
     "centroider": "./bin/centroider"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint ./src --fix"
   },
   "author": "Ryan Schenk",
   "license": "ISC",
