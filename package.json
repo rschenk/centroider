@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "d3-polygon": "^2.0.0",
-    "paper-jsdom": "^0.12.11"
-  },
-  "devDependencies": {}
+    "paper-jsdom": "^0.12.11",
+    "yargs": "^16.2.0"
+  }
 }

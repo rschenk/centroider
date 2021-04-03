@@ -5,8 +5,8 @@ const Styles = require('./styles.js')
 
 const fs = require('fs')
 
-const fileIn = './test/fixtures/input_with_hang_holes.svg'
-const fileOut = './test/fixtures/input_with_hang_holes--centroided.svg'
+const fileIn = './test/fixtures/input.svg'
+const fileOut = './test/fixtures/input--centroided.svg'
 
 // const fileIn = './test/fixtures/input.svg'
 // const fileOut = './test/fixtures/input--centroided.svg'
