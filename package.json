@@ -2,7 +2,9 @@
   "name": "centroider",
   "version": "0.1.0",
   "description": "computes centroids of a list of svg paths",
-  "main": "index.js",
+  "bin": {
+    "centroider": "./bin/centroider"
+  },
   "scripts": {
     "test": "jest"
   },
