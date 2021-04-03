@@ -5,4 +5,4 @@ test('outputFile(path, suffix)', () => {
   const suffix = 'cranked'
 
   expect(outputFile(input, suffix)).toBe('test/fixtures/abc--cranked.svg')
-});
+})
