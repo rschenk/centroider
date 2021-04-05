@@ -6,13 +6,13 @@
     "centroider": "./bin/centroider"
   },
   "scripts": {
-    "test": "jest",
+    "test": "mocha",
     "lint": "eslint ./src --fix"
   },
   "author": "Ryan Schenk",
   "license": "ISC",
   "dependencies": {
-    "d3-polygon": "^2.0.0",
+    "geometric": "^2.2.6",
     "paper-jsdom": "^0.12.11",
     "yargs": "^16.2.0"
   },
@@ -20,9 +20,10 @@
     "eslint": "^7.23.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jest": "^24.3.3",
+    "eslint-plugin-mocha": "^8.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
-    "jest": "^26.6.3"
+    "expect.js": "^0.3.1",
+    "mocha": "^8.3.2"
   }
 }

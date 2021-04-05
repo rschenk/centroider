@@ -3,7 +3,7 @@ module.exports = {
     commonjs: true,
     es2021: true,
     node: true,
-    'jest/globals': true
+    mocha: true
   },
   extends: [
     'standard'
@@ -12,7 +12,7 @@ module.exports = {
     ecmaVersion: 12
   },
   plugins: [
-    'jest'
+    'mocha'
   ],
   rules: {
   }

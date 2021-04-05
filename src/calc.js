@@ -1,5 +1,5 @@
 const Paper = require('paper-jsdom')
-const D3Polygon = require('d3-polygon')
+const Geometric = require('geometric')
 
 /*
  * Computes the centroid of the shape
@@ -15,7 +15,7 @@ function centroid (paperShape) {
     .segments
     .map(s => [s.point.x, s.point.y])
 
-  return new Paper.Point(D3Polygon.polygonCentroid(polyline))
+  return new Paper.Point(Geometric.polygonCentroid(polyline))
 }
 
 /*
@@ -29,3 +29,4 @@ function area (paperShape) {
 
 exports.centroid = centroid
 exports.area = area
+exports.Paper = Paper
